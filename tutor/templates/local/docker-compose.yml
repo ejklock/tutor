@@ -37,10 +37,7 @@ services:
   {% if ACTIVATE_ELASTICSEARCH %}
   elasticsearch:
     image: {{ DOCKER_REGISTRY }}{{ DOCKER_IMAGE_ELASTICSEARCH }}
-    environment:
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - "cluster.name=openedx"
-      - "bootstrap.memory_lock=true"
+    command: ["elasticsearch", "-Xms{{ ELASTICSEARCH_HEAP_SIZE }}", "-Xmx{{ ELASTICSEARCH_HEAP_SIZE }}", "--cluster.name=openedx", "--bootstrap.mlockall=true"]
     ulimits:
       memlock:
         soft: -1
@@ -93,7 +90,7 @@ services:
   forum:
     image: {{ DOCKER_REGISTRY }}{{ DOCKER_IMAGE_FORUM }}
     environment:
-      SEARCH_SERVER: "http://{{ ELASTICSEARCH_HOST }}:{{ ELASTICSEARCH_PORT }}"
+      SEARCH_SERVER: "{{ ELASTICSEARCH_SCHEME }}://{{ ELASTICSEARCH_HOST }}:{{ ELASTICSEARCH_PORT }}"
       MONGODB_AUTH: "{% if MONGODB_USERNAME and MONGODB_PASSWORD %}{{ MONGODB_USERNAME}}:{{ MONGODB_PASSWORD }}@{% endif %}"
       MONGODB_HOST: "{{ MONGODB_HOST }}"
       MONGODB_PORT: "{{ MONGODB_PORT }}"
@@ -155,7 +152,7 @@ services:
   ############# LMS and CMS workers
 
   {% if ACTIVATE_LMS %}
-  lms_worker:
+  lms-worker:
     image: {{ DOCKER_REGISTRY }}{{ DOCKER_IMAGE_OPENEDX }}
     environment:
       SERVICE_VARIANT: lms
@@ -174,7 +171,7 @@ services:
   {% endif %}
 
   {% if ACTIVATE_CMS %}
-  cms_worker:
+  cms-worker:
     image: {{ DOCKER_REGISTRY }}{{ DOCKER_IMAGE_OPENEDX }}
     environment:
       SERVICE_VARIANT: cms

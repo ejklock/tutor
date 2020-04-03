@@ -2,6 +2,35 @@
 
 Note: Breaking changes between versions are indicated by "💥".
 
+## v3.11.7 (2020-04-01)
+
+- [Bugfix] Fix missing js translations
+- [Bugfix] Fix tls certificate generation in cron jobs
+
+## v3.11.6 (2020-03-13)
+
+- [Bugfix] Fix "Unable to resolve dependency" error during forum initialisation
+- [Feature] Add `settheme` command to easily assign a theme to a domain name
+- [Improvement] Modify nginx access logs to include request scheme and server name (plugin developers should use the "tutor" log format)
+- [Bugfix] Fix DNS resolution of restarted service
+- [Feature] Restart multiple services with `local restart`
+- [Feature] Make it possible to easily reload openedx gunicorn process with `tutor local exec lms reload-gunicorn`
+- [Improvement] Rename lms/cms_worker to lms/cms-worker in local deployment
+- [Improvement] Add the management plugin to the rabbitmq container
+- [Improvement] Make it possible to run an Elasticsearch service on https
+
+## v3.11.5 (2020-02-27)
+
+- [Improvement] Switch edx-platform from open-release/ironwood.2 tag to the open-release/ironwood.master branch
+- [Security] Upgrade django to 1.11.28
+- [Improvement] Make it possible to configure the elasticsearch heap size
+- [Bugfix] Fix broken elasticsearch environment variables
+- [Improvement] Restore more recent Android app version (#289).
+
+## v3.11.4 (2020-02-16)
+
+- [Bugfix] Fix auth problem in Android app (#289)
+
 ## 3.11.3 (2020-01-21)
 
 - [Bugfix] Fix incorrectly parsed empty strings for `config save --set ...=...` commands

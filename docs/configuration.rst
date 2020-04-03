@@ -113,8 +113,10 @@ By default, a running Open edX platform deployed with Tutor includes all necessa
 Elasticsearch
 *************
 
+- ``ELASTICSEARCH_SCHEME`` (default: ``"http"``)
 - ``ELASTICSEARCH_HOST`` (default: ``"elasticsearch"``)
 - ``ELASTICSEARCH_PORT`` (default: ``9200``)
+- ``ELASTICSEARCH_HEAP_SIZE`` (default: ``"1g"``)
 
 Memcached
 *********
@@ -174,7 +176,9 @@ To create the certificate manually, run::
 
 To renew the certificate, run this command once per month::
 
+    tutor local stop nginx
     tutor local https renew
+    tutor local start -d
 
 .. _customise:
 

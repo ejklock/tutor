@@ -108,7 +108,7 @@ spec:
             - containerPort: 4567
           env:
             - name: SEARCH_SERVER
-              value: "http://{{ ELASTICSEARCH_HOST }}:{{ ELASTICSEARCH_PORT }}"
+              value: "{{ ELASTICSEARCH_SCHEME }}://{{ ELASTICSEARCH_HOST }}:{{ ELASTICSEARCH_PORT }}"
             - name: MONGODB_AUTH
               value: "{% if MONGODB_USERNAME and MONGODB_PASSWORD %}{{ MONGODB_USERNAME}}:{{ MONGODB_PASSWORD }}@{% endif %}"
             - name: MONGODB_HOST
@@ -206,7 +206,7 @@ kind: Deployment
 metadata:
   name: elasticsearch
   labels:
-    app.kubernetes.io/name: elasticearch
+    app.kubernetes.io/name: elasticsearch
 spec:
   selector:
     matchLabels:
