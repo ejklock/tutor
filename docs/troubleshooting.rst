@@ -19,6 +19,11 @@ Do you need professional assistance with your tutor-managed Open edX platform? O
 Logging
 -------
 
+.. note::
+    Logs are of paramount importance for debugging Tutor. When asking for help on the `Tutor forums <https://discuss.overhang.io>`__, **you should always include the unedited logs of your app**. You can get those with::
+        
+         tutor local logs --tail=100 -f
+
 To view the logs from all containers use the ``tutor local logs`` command, which was modeled on the standard `docker-compose logs <https://docs.docker.com/compose/reference/logs/>`_ command::
 
     tutor local logs --follow
@@ -29,7 +34,7 @@ To view the logs from just one container, for instance the web server::
 
 The last commands produce the logs since the creation of the containers, which can be a lot. Similar to a ``tail -f``, you can run::
 
-    tutor local logs--tail=0 -f
+    tutor local logs --tail=0 -f
 
 If you'd rather use a graphical user interface for viewing logs, you are encouraged to try out :ref:`Portainer <portainer>`.
 
@@ -40,20 +45,37 @@ If you'd rather use a graphical user interface for viewing logs, you are encoura
 
 The containerized Nginx needs to listen to ports 80 and 443 on the host. If there is already a webserver, such as Apache or Nginx, running on the host, the nginx container will not be able to start. To solve this issue, check the section on :ref:`how to setup a web proxy <web_proxy>`.
 
+"Couldn't connect to docker daemon"
+-----------------------------------
+
+This is not an error with Tutor, but with your Docker installation. This is frequently caused by a permission issue. Before running Tutor, you should be able to run::
+    
+    docker run --rm hello-world
+    
+If the above command does not work, you should fix your Docker installation. Some people will suggest to run Docker as root, or with ``sudo``; **do not do this**. Instead, what you should probably do is to add your user to the "docker" group. For more information, check out the `official Docker installation instructions <https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user>`__.
+
+.. _migrations_killed:
+
+"Running migrations... Killed!" / "Command failed with status 137: docker-compose"
+----------------------------------------------------------------------------------
+
+Open edX requires at least 4 GB RAM, in particular to run the SQL migrations. If the ``tutor local quickstart`` command dies after displaying "Running migrations", you most probably need to buy more memory or add swap to your machine. On Docker for Mac OS, by default, containers are allocated at most 2 GB of RAM. You should follow `these instructions from the official Docker documentation <https://docs.docker.com/docker-for-mac/#advanced>`__ to allocate at least 4-5 Gb to the Docker daemon.
+
+If migrations were killed halfway, there is a good chance that the MySQL database is in a state that is hard to recover from. The easiest way to recover is simply to delete all the MySQL data and restart the quickstart process. After you have allocated more memory to the Docker daemon, run::
+    
+    tutor local stop
+    sudo rm -rf "$(tutor config printroot)/data/mysql"
+    tutor local quickstart
+    
+.. warning::
+    THIS WILL ERASE ALL YOUR DATA! Do not run this on a production instance. This solution is only viable for new Open edX installations.
+
 Help! The Docker containers are eating all my RAM/CPU/CHEESE
 ------------------------------------------------------------
 
 You can identify which containers are consuming most resources by running::
 
     docker stats
-
-.. _migrations_killed:
-
-"Running migrations... Killed!"
--------------------------------
-
-Older versions of Open edX required at least 4 GB RAM, in particular to run the Open edX SQL migrations. On Docker for Mac, by default, containers are allocated at most 2 GB of RAM. On Mac OS, if the ``tutor local quickstart`` command dies after displaying "Running migrations", you most probably need to increase the allocated RAM. Follow `these instructions from the official Docker documentation <https://docs.docker.com/docker-for-mac/#advanced>`_.
-
 
 "Build failed running pavelib.servers.lms: Subprocess return code: 1"
 -----------------------------------------------------------------------
@@ -82,7 +104,7 @@ This will occur if you try to run a development environment without patching the
 "TypeError: get_logger_config() got an unexpected keyword argument 'debug'"
 -------------------------------------------------------------------------------
 
-This might occur when you try to run the latest version of ``edx-platform``, and not a version close to ``ironwood.2``. It is no longer necessary to patch the ``LOGGING`` configuration in the latest ``edx-platform`` releases, as indicated in the `development_` section, so you should remove the call to ``get_logger_config`` altogether from your development settings.
+This might occur when you try to run the latest version of ``edx-platform``, and not a version close to ``ironwood.master``. It is no longer necessary to patch the ``LOGGING`` configuration in the latest ``edx-platform`` releases, as indicated in the `development_` section, so you should remove the call to ``get_logger_config`` altogether from your development settings.
 
 The chosen default language does not display properly
 -----------------------------------------------------

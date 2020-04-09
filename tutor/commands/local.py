@@ -30,10 +30,7 @@ class LocalContext(Context):
         )
 
 
-@click.group(
-    short_help="Run Open edX locally",
-    help="Run Open edX platform locally, with docker-compose.",
-)
+@click.group(help="Run Open edX locally with docker-compose",)
 @click.pass_context
 def local(context):
     context.obj = LocalContext(context.obj.root)
@@ -124,7 +121,7 @@ See the official certbot documentation for your platform: https://certbot.eff.or
         "-p",
         "80:80",
         "--entrypoint=sh",
-        "certbot/certbot:latest",
+        "docker.io/certbot/certbot:latest",
         "-e",
         "-c",
         script,

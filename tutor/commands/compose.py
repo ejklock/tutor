@@ -3,6 +3,7 @@ import click
 from .. import config as tutor_config
 from .. import fmt
 from .. import scripts
+from .. import utils
 
 
 class ScriptRunner(scripts.BaseRunner):
@@ -11,8 +12,9 @@ class ScriptRunner(scripts.BaseRunner):
         self.docker_compose_func = docker_compose_func
 
     def exec(self, service, command):
+        opts = [] if utils.is_a_tty() else ["-T"]
         self.docker_compose_func(
-            self.root, self.config, "exec", service, "sh", "-e", "-c", command
+            self.root, self.config, "exec", *opts, service, "sh", "-e", "-c", command
         )
 
 
@@ -62,18 +64,22 @@ restart all services. Note that this performs a 'docker-compose restart', so new
 may not be taken into account. It is useful for reloading settings, for instance. To
 fully stop the platform, use the 'reboot' command.""",
 )
-@click.argument("service")
+@click.argument("services", metavar="service", nargs=-1)
 @click.pass_obj
-def restart(context, service):
+def restart(context, services):
     config = tutor_config.load(context.root)
     command = ["restart"]
-    if service == "openedx":
-        if config["ACTIVATE_LMS"]:
-            command += ["lms", "lms_worker"]
-        if config["ACTIVATE_CMS"]:
-            command += ["cms", "cms_worker"]
-    elif service != "all":
-        command += [service]
+    if "all" in services:
+        pass
+    else:
+        for service in services:
+            if "openedx" == service:
+                if config["ACTIVATE_LMS"]:
+                    command += ["lms", "lms-worker"]
+                if config["ACTIVATE_CMS"]:
+                    command += ["cms", "cms-worker"]
+            else:
+                command.append(service)
     context.docker_compose(context.root, config, *command)
 
 
@@ -86,7 +92,10 @@ def restart(context, service):
 @click.pass_obj
 def run(context, args):
     config = tutor_config.load(context.root)
-    context.docker_compose(context.root, config, "run", "--rm", *args)
+    command = ["run", "--rm"]
+    if not utils.is_a_tty():
+        command.append("-T")
+    context.docker_compose(context.root, config, *command, *args)
 
 
 @click.command(
@@ -169,6 +178,19 @@ def createuser(context, superuser, staff, password, name, email):
     runner.exec("lms", command)
 
 
+@click.command(
+    help="Set a theme for a given domain name. To reset to the default theme , use 'default' as the theme name."
+)
+@click.argument("theme_name")
+@click.argument("domain_names", metavar="domain_name", nargs=-1)
+@click.pass_obj
+def settheme(context, theme_name, domain_names):
+    config = tutor_config.load(context.root)
+    runner = ScriptRunner(context.root, config, context.docker_compose)
+    for domain_name in domain_names:
+        scripts.set_theme(theme_name, domain_name, runner)
+
+
 @click.command(help="Import the demo course")
 @click.pass_obj
 def importdemocourse(context):
@@ -190,4 +212,5 @@ def add_commands(command_group):
     command_group.add_command(logs)
     command_group.add_command(createuser)
     command_group.add_command(importdemocourse)
+    command_group.add_command(settheme)
     # command_group.add_command(run_hook) # Disabled for now

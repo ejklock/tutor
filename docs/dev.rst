@@ -23,7 +23,7 @@ This ``openedx-dev`` development image differs from the ``openedx`` production i
 
 - The user that runs inside the container has the same UID as the user on the host, in order to avoid permission problems inside mounted volumes (and in particular in the edx-platform repository).
 - Additional python and system requirements are installed for convenient debugging: `ipython <https://ipython.org/>`__, `ipdb <https://pypi.org/project/ipdb/>`__, vim, telnet.
-- The edx-platform `development requirements <https://github.com/edx/edx-platform/blob/open-release/ironwood.2/requirements/edx/development.in>`__ are installed.
+- The edx-platform `development requirements <https://github.com/edx/edx-platform/blob/open-release/ironwood.master/requirements/edx/development.in>`__ are installed.
 
 Since the ``openedx-dev`` is based upon the ``openedx`` docker image, it should be re-built every time the ``openedx`` docker image is modified.
 
@@ -80,10 +80,10 @@ Then, add the following content::
         cms:
             volumes:
                 - /path/to/edx-platform/:/openedx/edx-platform
-        lms_worker:
+        lms-worker:
             volumes:
                 - /path/to/edx-platform/:/openedx/edx-platform
-        cms_worker:
+        cms-worker:
             volumes:
                 - /path/to/edx-platform/:/openedx/edx-platform
 
@@ -108,6 +108,29 @@ To debug a local edx-platform repository, add a ``import ipdb; ipdb.set_trace()`
 
     tutor dev runserver -v /path/to/edx-platform:/openedx/edx-platform lms
 
+XBlock and edx-platform plugin development
+------------------------------------------
+
+In some cases you will have to develop features for packages that are pip-installed next to edx-platform. This is quite easy with Tutor. Just add your packages to the ``$(tutor config printroot)/env/build/openedx/requirements/private.txt`` file. To avoid re-building the openedx Docker image at every change, you should add your package in editable mode. For instance::
+
+    echo "-e ./mypackage" >> "$(tutor config printroot)/env/build/openedx/requirements/private.txt"
+
+The ``requirements`` folder should have the following content::
+
+    env/build/openedx/requirements/
+        private.txt
+        mypackage/
+            setup.py
+            ...
+
+You will have to re-build the openedx Docker image once::
+    
+    tutor images build openedx
+
+You should then run the development server as usual, with ``runserver``. Every change made to the ``mypackage`` folder will be picked up and the development server will be automatically reloaded.
+
+.. _theming:
+
 Customised themes
 -----------------
 
@@ -122,9 +145,13 @@ Then, run a local webserver::
 
     tutor dev runserver lms
 
-The LMS can then be accessed at http://localhost:8000.
+The LMS can then be accessed at http://localhost:8000. You will then have to :ref:`enable that theme <settheme>` for the development domain names::
+    
+    tutor dev settheme mythemename localhost:8000 localhost:8001
 
-Then, follow the `Open edX documentation to apply your themes <https://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/configuration/changing_appearance/theming/enable_themes.html#apply-a-theme-to-a-site>`_. You will not have to modify the ``lms.env.json``/``cms.env.json`` files; just follow the instructions to add a site theme in http://localhost:8000/admin (starting from step 3).
+Re-build development docker image (and compile assets)::
+    
+    tutor images build openedx-dev
 
 Watch the themes folders for changes (in a different terminal)::
 

@@ -57,7 +57,7 @@ Features
 * World-famous 1-click `installation and upgrades <https://docs.tutor.overhang.io/install.html>`_
 * Extensible architecture with `plugins <https://docs.tutor.overhang.io/plugins.html>`_
 * Works with `Kubernetes <https://docs.tutor.overhang.io/k8s.html>`_
-* No technical skill required with the `1-click Tutor AWS image <https://docs.tutor.overhang.io/install.html#cloud_install>`_
+* No technical skill required with the `1-click Tutor AWS image <https://docs.tutor.overhang.io/install.html#cloud-deployment>`_
 * Professional support and premium plugins available with `Tutor Long Term Support (LTS) <https://overhang.io/tutor/lts>`__
 
 .. _readme_intro_end:
@@ -83,18 +83,9 @@ Extensive documentation is available online: https://docs.tutor.overhang.io/
 Support
 -------
 
-To get community support, go to the official discussion forums: https://discuss.overhang.io.
+To get community support, go to the official discussion forums: https://discuss.overhang.io. For official support, please subscribe to a Long Term Support (LTS) license at https://overhang.io/tutor/lts.
 
 .. _readme_support_end:
-
-.. _whats_tutor_start:
-
-What is Tutor?
---------------
-
-Tutor was presented at the 2019 Open edX conference in San Diego, CA. Here's the 7-minute talk: `video <https://www.youtube.com/watch?v=Oqc7c-3qFc4>`_, `slides <https://regisb.github.io/openedx2019/>`_.
-
-.. _whats_tutor_end:
 
 .. _readme_contributing_start:
 
