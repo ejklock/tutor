@@ -2,6 +2,21 @@
 
 Note: Breaking changes between versions are indicated by "💥".
 
+## v3.11.12 (2020-04-16)
+
+- [Feature] Make it easy to add custom translation strings to the openedx Docker image
+- [Improvement] Make it possible to rely on a different npm registry for faster image building
+
+## v3.11.11 (2020-04-15)
+
+- [Bugfix] Make sure all emails (including "password reset") are properly saved to a local file in development mode (#315)
+- [Improvement] Add `openedx-development-settings` patch to patch the LMS and the CMS simultaneously in development 
+- [Bugfix] Fix missing celery tasks in the CMS
+
+## v3.11.10 (2020-04-14)
+
+- [Bugfix] Fix updates to the course structure in the LMS (#302)
+
 ## v3.11.9 (2020-04-07)
 
 - [Bugfix] Fix Android app build for domain names that include a dash ("-")

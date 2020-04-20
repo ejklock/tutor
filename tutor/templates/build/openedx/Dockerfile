@@ -31,12 +31,18 @@ WORKDIR /openedx/edx-platform
 # Apply patches
 # Allow SigV4 authentication for video uploads to S3 https://github.com/edx/edx-platform/pull/22080
 RUN curl https://github.com/overhangio/edx-platform/commit/0d4f6cc3433013960b28e963c4094ef2a2a92f04.patch | git apply -
+# Resolve missing tasks in CMS 
+# https://github.com/edx/edx-platform/pull/21297/
+# https://github.com/edx/edx-platform/pull/21305/
+RUN curl https://github.com/edx/edx-platform/commit/adb2c672e4d17cc1c42bdc206a0051e0fa16b5be.patch | git apply -
+RUN curl https://github.com/edx/edx-platform/commit/b7ecd80a2bef0d845c3bce97818e70fb3ed9e36d.patch | git apply -
 
-# Download extra locales to /openedx/locale
+# Download extra locales to /openedx/locale/contrib/locale
 RUN cd /tmp \
     && curl -L -o openedx-i18n.tar.gz https://github.com/ejklock/openedx-i18n/archive/ufmtonline.tar.gz \
     && tar xzf /tmp/openedx-i18n.tar.gz \
-    && mv openedx-i18n-ufmtonline/edx-platform/locale/ /openedx/locale/ \
+    && mkdir -p /openedx/locale/contrib \
+    && mv openedx-i18n-ufmtonline/edx-platform/locale /openedx/locale/contrib \
     && rm -rf openedx-i18n*
 
 # Install python requirements in a virtualenv
@@ -58,8 +64,9 @@ RUN nodeenv /openedx/nodeenv --node=8.9.3 --prebuilt
 ENV PATH /openedx/nodeenv/bin:${PATH}
 
 # Install nodejs requirements
+ARG NPM_REGISTRY=https://registry.npmjs.org/
 RUN npm set progress=false \
-    && npm install
+    && npm install --verbose --registry=$NPM_REGISTRY
 ENV PATH ./node_modules/.bin:${PATH}
 
 # Install private requirements: this is useful for installing custom xblocks.
@@ -75,6 +82,11 @@ ENV CONFIG_ROOT /openedx/config
 COPY settings/lms/*.py ./lms/envs/tutor/
 COPY settings/cms/*.py ./cms/envs/tutor/
 
+# Copy user-specific locales to /openedx/locale/user/locale and compile them
+RUN mkdir -p /openedx/locale/user
+COPY ./locale/ /openedx/locale/user/locale/
+RUN cd /openedx/locale/user && \
+    django-admin.py compilemessages -v1
 # Compile i18n strings: in Ironwood, js locales are not properly compiled out of the box
 # and we need to do a pass ourselves. Also, we need to compile the djangojs.js files for
 # the downloaded locales.
