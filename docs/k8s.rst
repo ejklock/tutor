@@ -5,7 +5,9 @@ Kubernetes deployment
 
 With the same docker images we created for :ref:`single server deployment <local>` and :ref:`local development <development>`, we can launch an Open edX platform on Kubernetes. Always in 1 click, of course :)
 
-A word of warning: managing a Kubernetes platform is a fairly advanced endeavour. In this documentation, we assume familiarity with Kubernetes. Running an Open edX platform with Tutor on a single server or in a Kubernetes cluster are two very different things. The local Open edX install was designed such that users with no prior experience with system administration could still launch an Open edX platform. It is *not* the case for the installation method outlined here. You have been warned :)
+A word of warning: managing a Kubernetes platform is a fairly advanced endeavour. In this documentation, we assume familiarity with Kubernetes. Running an Open edX platform with Tutor on a single server or in a Kubernetes cluster are two very different things. The local Open edX install was designed such that users with no prior experience with system administration could still launch an Open edX platform. It is *not* the case for the installation method outlined here.
+
+Consider yourself warned :)
 
 Requirements
 ------------
@@ -30,10 +32,16 @@ Ingress controller
 
 In order to access your platform, you will have to setup an Ingress controller. Instructions vary for each cloud provider. To deploy an Nginx Ingress controller, it might be as simple as running::
 
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.24.1/deploy/mandatory.yaml
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.24.1/deploy/provider/cloud-generic.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/mandatory.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/provider/cloud-generic.yaml
 
 See the `official instructions <https://kubernetes.github.io/ingress-nginx/deploy/>`_ for more details.
+
+
+.. warning::
+    By default, Tutor does *not* launch an Ingress resource or TLS/SSL certificate issuer for you. There are many different ways to create an Ingress resource and issue certificates in a Kubernetes cluster, and it's not the responsibility of Tutor to make this decision. However, Tutor comes with a ready-to-run configuration for an Nginx-based Ingress ressource and a `cert-manager <https://cert-manager.io/docs/>`__ Issuer that delivers `Let's Encrypt <https://letsencrypt.org/>`__ certificates. You may examine the configuration in ``$(tutor config printroot)/env/k8s/ingress.yml``. If you are happy with this configuration, you may apply it with::
+        
+        kubectl apply -k $(tutor config printroot)/env --selector="app.kubernetes.io/component in (ingress, issuer)"
 
 On Minikube, run::
   
@@ -50,15 +58,26 @@ cert-manager for TLS certificates
 
 Tutor relies on `cert-manager <https://docs.cert-manager.io/>`_ to generate TLS certificates for HTTPS access. In order to activate HTTPS support, you will have to install cert-manager yourself. To do so, follow the `instructions from the official documentation <https://docs.cert-manager.io/en/latest/getting-started/install/kubernetes.html>`_. It might be as simple as running::
 
-    kubectl create namespace cert-manager
-    kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
-    kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v0.8.0/cert-manager.yaml
+    kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.14.0/cert-manager.yaml
 
 If you decide to enable HTTPS certificates, you will also have to set ``WEB_PROXY=true`` in the platform configuration, because the SSL/TLS termination will not occur in the Nginx container, but in the Ingress controller. To do so, run::
   
     tutor config save --set WEB_PROXY=true
 
 Note that this configuration might conflict with a local installation.
+
+.. warning::
+    On DigitalOcean, there is currently a bug that prevents certificate issuers from successfully fetching TLS certificates from Let's Encrypt. A workaround consists in adding a custom annotation to the "ingress-nginx" service::
+        
+        kubectl -n ingress-nginx patch service ingress-nginx -p \
+            '{"metadata": {"annotations": {"service.beta.kubernetes.io/do-loadbalancer-hostname": "YOURLMSHOSTHERE"}}}'
+    
+    Sources:
+    
+    * https://www.digitalocean.com/community/questions/how-do-i-correct-a-connection-timed-out-error-during-http-01-challenge-propagation-with-cert-manager
+    * https://www.digitalocean.com/community/questions/pod-unable-to-curl-loadbalancer
+    * https://github.com/jetstack/cert-manager/issues/863#issuecomment-567062996
+    * https://github.com/digitalocean/digitalocean-cloud-controller-manager/blob/master/docs/controllers/services/examples/README.md#accessing-pods-over-a-managed-load-balancer-from-inside-the-cluster
 
 S3-like object storage with `MinIO <https://www.minio.io/>`_
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

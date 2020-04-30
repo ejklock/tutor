@@ -2,6 +2,23 @@
 
 Note: Breaking changes between versions are indicated by "💥".
 
+## v3.12.2 (2020-04-29)
+
+- [Bugfix] Fix oauth2 authentication with 3rd-party services, such as discovery
+- [Bugfix] Upgrade scorm xblock to solve caching issue
+
+## v3.12.1 (2020-04-27)
+
+- [Improvement] Increase max upload allowed size to 250Mb in CMS
+
+## v3.12.0 (2020-04-26)
+
+- 💥[Improvement] Do not deploy an ingress or SSL/TLS certificate issuer ressource by default in Kubernetes
+- [Improvement] Fix tls certificate generation in k8s
+- 💥[Improvement] Radically change the way jobs are run: we no longer "exec", but instead run a dedicated container.
+- 💥[Improvement] Upgrade k8s certificate issuer to cert-manager.io/v1alpha2
+- [Feature] Add SCORM XBlock to default openedx docker image
+
 ## v3.11.12 (2020-04-16)
 
 - [Feature] Make it easy to add custom translation strings to the openedx Docker image

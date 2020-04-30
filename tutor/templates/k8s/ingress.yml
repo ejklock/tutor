@@ -1,14 +1,21 @@
 ---{% set hosts = [LMS_HOST, "preview." + LMS_HOST, CMS_HOST] %}
-apiVersion: extensions/v1beta1
+# This is an nginx-based Ingress object that relies on a letsencrypt Issuer for SSL
+# termination. By default, this ingress and issuer are *not* deployed to the Kubernetes
+# cluster when running "quickstart". This is because there exist many different
+# ingress/issuer combinations and it should not be Tutor's job to choose which one you
+# should use.
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: web
   labels:
     app.kubernetes.io/name: web
+    app.kubernetes.io/component: ingress
   annotations:
+    kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/proxy-body-size: 1000m
-    {% if ACTIVATE_HTTPS%}certmanager.k8s.io/issuer: letsencrypt
-    certmanager.k8s.io/acme-challenge-type: http01{% endif %}
+    {% if ACTIVATE_HTTPS%}kubernetes.io/tls-acme: "true"
+    cert-manager.io/issuer: letsencrypt{% endif %}
 spec:
   rules:
   {% for host in hosts %}
@@ -22,45 +29,29 @@ spec:
   {% if ACTIVATE_HTTPS %}
   tls:
   - hosts:
-    {% for host in hosts %}
-    - {{ host }}{% endfor %}
-    {{ patch("k8s-ingress-tls-hosts")|indent(6) }}
+      {% for host in hosts %}
+      - {{ host }}{% endfor %}
+      {{ patch("k8s-ingress-tls-hosts")|indent(6) }}
     secretName: letsencrypt
   {%endif%}
 {% if ACTIVATE_HTTPS %}
 ---
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Issuer
 metadata:
   name: letsencrypt
   labels:
     app.kubernetes.io/name: letsencrypt
+    app.kubernetes.io/component: issuer
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
     email: {{ CONTACT_EMAIL }}
     privateKeySecretRef:
       name: letsencrypt-privatekey
-    http01: {}
----
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: Certificate
-metadata:
-  name: {{ LMS_HOST|replace(".", "-") }}
-spec:
-  secretName: {{ LMS_HOST }}-tls
-  issuerRef:
-    name: letsencrypt
-  commonName: {{ LMS_HOST }}
-  dnsNames:
-  - {{ LMS_HOST }}
-  - {{ CMS_HOST }}
-  acme:
-    config:
-    - http01:
-        ingress: web
-      domains:
-      - {{ LMS_HOST }}
-      - {{ CMS_HOST }}
-{{ patch("k8s-ingress-certificates") }}
+    solvers:
+      - selector: {}
+        http01:
+          ingress:
+            class: nginx
 {% endif %}
