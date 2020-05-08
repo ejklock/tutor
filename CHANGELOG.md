@@ -2,6 +2,10 @@
 
 Note: Breaking changes between versions are indicated by "💥".
 
+## v3.12.3 (2020-05-05)
+
+- [Security] Apply most recent edx-platform [security patches](https://discuss.openedx.org/t/security-patch-for-edit-chapter-xss-lint-issues/2030)
+
 ## v3.12.2 (2020-04-29)
 
 - [Bugfix] Fix oauth2 authentication with 3rd-party services, such as discovery
