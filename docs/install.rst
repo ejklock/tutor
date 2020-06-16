@@ -39,18 +39,24 @@ This is the simplest and recommended installation method for most people. Note h
 
 .. _install_source:
 
-From source
------------
+Alternative installation methods
+--------------------------------
 
 If you would like to inspect the Tutor source code, you are most welcome to install Tutor from `Pypi <https://pypi.org/project/tutor-openedx/>`_ or directly from `the Github repository <https://github.com/overhangio/tutor>`_. You will need python >= 3.6 and the libyaml development headers. On Ubuntu, these requirements can be installed by running::
 
     sudo apt install python3 libyaml-dev
 
-Installing from pypi::
+Installing from pypi
+~~~~~~~~~~~~~~~~~~~~
+
+::
 
     pip install tutor-openedx
 
-Installing from a local clone of the repository::
+Installing from source
+~~~~~~~~~~~~~~~~~~~~~~
+
+::
 
     git clone https://github.com/overhangio/tutor
     cd tutor
@@ -59,7 +65,7 @@ Installing from a local clone of the repository::
 .. _cloud_install:
   
 Zero-click AWS installation
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Tutor can be launched on Amazon Web Services very quickly with the `official Tutor AMI <https://aws.amazon.com/marketplace/pp/B07PV3TB8X>`__. Shell access is not required, as all configuration will happen through the Tutor web user interface. For detailed installation instructions, we recommend watching the following video:
 
@@ -94,7 +100,7 @@ After opening a new shell, you can test auto-completion by typing::
 Uninstallation
 --------------
 
-It is fairly easy to completely uninstall Tutor and to delete the any Open edX platforms that is running locally.
+It is fairly easy to completely uninstall Tutor and to delete the Open edX platforms that is running locally.
 
 First of all, stop any locally-running platform::
     

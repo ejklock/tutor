@@ -38,5 +38,4 @@ COPY ./edx.properties ./OpenEdXMobile/edx.properties
 RUN mkdir /openedx/config
 RUN ln -s /openedx/config/gradle.properties ./OpenEdXMobile/gradle.properties
 
-CMD ./gradlew assembleProdDebuggable && \
-  cp OpenEdXMobile/build/outputs/apk/prod/debuggable/*.apk /openedx/data/
+ENTRYPOINT ["sh", "-e", "-c"]
